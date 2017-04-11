@@ -1,0 +1,410 @@
+<html>
+<head>
+
+	<title>Solitaire</title>
+	
+<!--	
+			<link href="phonestyle.css" 	rel="stylesheet" 	type="text/css" 	media="screen and (max-device-width: 800px)">
+			<link href="mainstyle.css" 		rel="stylesheet" 	type="text/css" 	media="screen and (min-device-width: 800px)">
+			
+			<script src="scripts.js"></script>
+	
+			<link rel="icon" type="image/png" href="icon.png"/>
+-->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<style>
+
+body{
+	background: #999;
+	font-family: "Lucida Console", Monaco, monospace;
+
+
+}
+
+#deck,
+#drawn,
+.tops,
+.piles,
+.card{
+	height: 150px;
+	width: 100px;
+	border: 1px solid #000;
+	display: block;
+	box-sizing: border-box;
+	border-radius: 3px;
+	float: left;
+	margin: 10px;
+}
+
+#deck,
+#drawn,
+.tops,
+.piles{
+	background: #666;
+}
+
+#deckANDdrawn{
+	position: absolute;
+	top: 50px;
+	left: 50px;
+}
+
+#top{
+	position: absolute;
+	top: 50px;
+	left: 410px;
+}
+
+#pile{
+	position: absolute;
+	top: 250px;
+	left: 50px;
+}
+
+.front{
+	background: #fff;
+	background-image: none;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	padding: 0px;
+	overflow: hidden;
+	text-align: center;
+	
+	  /* IE */
+	-ms-interpolation-mode: nearest-neighbor;
+
+	  /* Firefox */
+	image-rendering: -moz-crisp-edges;
+
+	  /* Safari */
+	image-rendering: -webkit-optimize-contrast;
+
+	  /* Chrome and Opera */
+	image-rendering: pixelated;
+}
+
+.back{
+	background: url("http://www.murphysmagicsupplies.com/images_email/Mandolin_BACK.jpg");
+	background-size: 100% 100%;
+}
+
+.card:hover{ 
+	cursor: pointer; 
+/*	-webkit-transform: rotateY(180deg);
+	transform: rotateY(180deg);
+	
+	transition: 		all 1s ease-in-out;
+	-moz-transition: 	all 1s ease-in-out;
+	-webkit-transition: all 1s ease-in-out;
+*/
+	}
+
+#deck .card{
+	margin: 0px 0px -150px 0px;
+}
+
+#drawn{ 
+	max-width: 200px;
+}
+
+#drawn .set{
+	margin: 0px -200px 0px 0px;
+	float: left;
+}
+
+#drawn .set .card{
+	margin: 0px -50px 0px 0px;
+}
+
+.piles .card{
+	margin: 0px 0px -100px 0px;
+}
+
+
+</style>
+</head>
+<body>
+
+
+<div id="deckANDdrawn">
+<div id="deck"></div>
+<div id="drawn"></div>
+</div>
+
+<div id="top">
+<div class="tops" id="top1"></div>
+<div class="tops" id="top2"></div>
+<div class="tops" id="top3"></div>
+<div class="tops" id="top4"></div>
+</div>
+
+<div id="pile">
+<div class="piles" id="pile1"></div>
+<div class="piles" id="pile2"></div>
+<div class="piles" id="pile3"></div>
+<div class="piles" id="pile4"></div>
+<div class="piles" id="pile5"></div>
+<div class="piles" id="pile6"></div>
+<div class="piles" id="pile7"></div>
+</div>
+
+
+
+</body>
+<script>
+
+var cards    = [];
+var suits    = ["Diamonds", "Clubs", "Hearts", "Spades"];
+var values   = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+
+var deck     = [];
+var drawn    = [];
+
+var pile1    = [];
+var pile2    = [];
+var pile3    = [];
+var pile4    = [];
+var pile5    = [];
+var pile6    = [];
+var pile7    = [];
+
+var discard1 = [];
+var discard2 = [];
+var discard3 = [];
+var discard4 = [];
+
+var cardSelected  = false;
+var selectedValue = null;
+var selectedSuit  = null;
+
+/*********************/
+/****** CLASSES ******/
+/*********************/
+
+/// CARDS ///
+function card(value, suit, flipped){
+	this.suit = suit;
+	this.value  = value;
+	this.flipped = flipped;
+}
+
+
+
+/*********************/
+/******* SETUP *******/
+/*********************/
+
+/// CREATE CARDS ///
+function createCards(){
+
+	for(var a=0; a<suits.length;  a++){
+		for(var b=0; b<values.length; b++){
+			cards.push(new card(values[b], suits[a], false));
+		}
+	}
+	
+}
+
+
+/// SHUFFLE CARDS ///
+function shuffle(){
+
+	// go through the deck backwards
+	for(var a=(cards.length-1); a>(-1); a--){
+	
+		//pick a random card that hasn't been visited
+		var b = Math.floor(Math.random() * a);
+		
+		//swap with current card
+		var temp = cards[a];
+		cards[a] = cards[b];
+		cards[b] = temp;
+
+	}
+		
+}
+
+
+/// DEAL OUT CARDS ///
+function deal(){
+
+deck = cards;
+
+pile1.push(deck.pop());
+pile1[pile1.length-1].flipped = true;
+
+pile2.push(deck.pop());
+pile2.push(deck.pop());
+pile2[pile2.length-1].flipped = true;
+
+pile3.push(deck.pop());
+pile3.push(deck.pop());
+pile3.push(deck.pop());
+pile3[pile3.length-1].flipped = true;
+
+pile4.push(deck.pop());
+pile4.push(deck.pop());
+pile4.push(deck.pop());
+pile4.push(deck.pop());
+pile4[pile4.length-1].flipped = true;
+
+pile5.push(deck.pop());
+pile5.push(deck.pop());
+pile5.push(deck.pop());
+pile5.push(deck.pop());
+pile5.push(deck.pop());
+pile5[pile5.length-1].flipped = true;
+
+pile6.push(deck.pop());
+pile6.push(deck.pop());
+pile6.push(deck.pop());
+pile6.push(deck.pop());
+pile6.push(deck.pop());
+pile6.push(deck.pop());
+pile6[pile6.length-1].flipped = true;
+
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7.push(deck.pop());
+pile7[pile7.length-1].flipped = true;
+
+}
+
+/// DISPLAY CARD ///
+function displayCard(card, pile, place){
+
+	var value   = card.value;
+	var suit    = card.suit;
+	var flipped = card.flipped;
+	
+	if(flipped==true)	{ return "<div class='card front' id='" + value + suit + "' onclick=\"clickCard('" + pile + "', '" + place + "')\"><img src='CARDS/" + value + suit + ".png'></div>"; }
+	if(flipped==false)	{ return "<div class='card back'></div>"; }
+	
+}
+
+/// DISPLAY CARDS ///
+function displayCards(){
+	
+for(var a=0; a<pile1.length; a++)	{ document.getElementById("pile1").innerHTML += displayCard(pile1[a], "pile1", a); }
+for(var a=0; a<pile2.length; a++)	{ document.getElementById("pile2").innerHTML += displayCard(pile2[a], "pile2", a); }
+for(var a=0; a<pile3.length; a++)	{ document.getElementById("pile3").innerHTML += displayCard(pile3[a], "pile3", a); }
+for(var a=0; a<pile4.length; a++)	{ document.getElementById("pile4").innerHTML += displayCard(pile4[a], "pile4", a); }
+for(var a=0; a<pile5.length; a++)	{ document.getElementById("pile5").innerHTML += displayCard(pile5[a], "pile5", a); }
+for(var a=0; a<pile6.length; a++)	{ document.getElementById("pile6").innerHTML += displayCard(pile6[a], "pile6", a); }
+for(var a=0; a<pile7.length; a++)	{ document.getElementById("pile7").innerHTML += displayCard(pile7[a], "pile7", a); }
+for(var a=0; a<deck.length; a++)	{ document.getElementById("deck").innerHTML  += displayCard( deck[a],  "deck", a); }
+
+}
+
+createCards();
+shuffle();
+deal();
+displayCards();
+
+document.getElementById("deck").onclick = function(){draw();}
+
+
+
+/*********************/
+/***** FUNCTIONS *****/
+/*********************/
+
+/// DRAW CARDS ///
+function draw(){
+
+	// if the deck is empty
+	if(deck.length<1){
+		
+		// unflip all cards and return to deck
+		for(var a=0; a<drawn.length;){
+			drawn[a].flipped = false;
+			deck.push(drawn.pop());
+		}
+	
+		// clear drawn pile
+		document.getElementById("drawn").innerHTML = "";
+	
+	}
+	
+	// if deck has cards
+	else{
+	
+		var newCards = 0;
+	
+		// draw up to 3 cards if possible
+		for(var a=0; a<3 && deck.length>0; a++){
+			drawn.push(deck.pop());
+			newCards++;
+		}
+		
+		// print drawn cards
+		var print = "<div class='set'>";
+		for(var a=(drawn.length-newCards); a<drawn.length; a++){
+			drawn[a].flipped = true;
+			print += drawn[a].display();
+		}
+		print += "</div>";
+		document.getElementById("drawn").innerHTML += print;
+	
+	}
+	
+}
+
+/// CLICK CARDS ///
+function clickCard(pile, place){
+
+	// get card value and suit
+//	var value = pile[place].value;
+//	var suit  = pile[place].suit;
+	
+	alert(pile[1] + place + " ");
+	
+	// if card in drawn and is covered
+	if(pile.length>place+1){ alert("cannot select this card"); }
+		
+	//if a card has already been selected
+	else if(cardSelected==true){
+		
+		//if the same card is clicked
+		
+		//if trying to place on another card
+			//cancel if trying to place on drawn pile
+			//card value is +1
+			//if piles then opposite color
+			//if discard then same suit
+			//move card
+	
+	
+	
+	
+		cardSelected = false;
+	
+	}
+	
+	else{ cardSelected = true; }
+
+}
+
+/// TRANSFER CARD ///
+function transferCard(){
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+</script>
+</html>
