@@ -54,6 +54,7 @@ body{
 	position: absolute;
 	top: 50px;
 	left: 410px;
+	paddng: 0px;
 }
 
 #pile{
@@ -83,6 +84,8 @@ body{
 	  /* Chrome and Opera */
 	image-rendering: pixelated;
 }
+
+.selected{ border: 2px solid #0c0; }
 
 .back{
 	background: url("http://www.murphysmagicsupplies.com/images_email/Mandolin_BACK.jpg");
@@ -114,11 +117,15 @@ body{
 }
 
 #drawn .set .card{
-	margin: 0px -50px 0px 0px;
+	margin: 0px -70px 0px 0px;
+}
+
+.discards .card{
+	margin: 0px 0px -150px 0px;
 }
 
 .piles .card{
-	margin: 0px 0px -100px 0px;
+	margin: 0px 0px -110px 0px;
 }
 
 
@@ -162,9 +169,6 @@ var piles    = [];
 /*		2-8 	= PILES			*/
 /*		9-12 	= DISCARDS		*/
 //////////////////////////////////
-
-var suits    = ["Diamonds", "Clubs", "Hearts", "Spades"];
-var values   = [1,2,3,4,5,6,7,8,9,10,11,12,13];
 
 var cardSelected  = false;
 var selectedPile  = null;
@@ -217,6 +221,9 @@ function createPiles(){
 /// CREATE CARDS ///
 function createCards(){
 
+	var suits    = [1,2,3,4];
+	var values   = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+
 	for(var a=0; a<suits.length;  a++){
 		for(var b=0; b<values.length; b++){
 			piles[0].cards.push(new card(values[b], suits[a], false));
@@ -267,11 +274,26 @@ function displayCard(card, pile, place){
 	var value   = card.value;
 	var suit    = card.suit;
 	var flipped = card.flipped;
+	var selected;
 	
-	if		(	flipped==true && 
-				pile=="drawn" && 
-				place<(piles[1].cards.length-1)	)	{ return "<div class='card front' id='" + value + suit + "'><img src='CARDS/" + value + suit + ".png'></div>";}
-	else if	(	flipped==true					)	{ return "<div class='card front' id='" + value + suit + "' onclick=\"clickCard('" + pile + "', '" + place + "')\"><img src='CARDS/" + value + suit + ".png'></div>"; }
+	if(pile==selectedPile && place==selectedPlace){ selected = true; }
+	
+	var suitName = ["", "Diamonds", "Clubs", "Hearts", "Spades"];
+	
+	if		(	pile==1       		&& 
+				place<(piles[1].cards.length-1)	)	{ return "<div class='card front " 
+															 + (selected ? "selected" : "")
+															 + "' id='" + value + suit + "'>" 
+															 + "<img src='CARDS/" + value + suitName[suit]+ ".png'>"
+															 + "</div>"; 
+													}
+	else if	(	flipped==true					)	{ return "<div class='card front " 
+															 + (selected ? "selected" : "")
+															 + "' id='" + value + suit + "'" 
+															 + "' onclick=\"clickCard('" + pile + "', '" + place + "')\">" 
+															 + "<img src='CARDS/" + value + suitName[suit] + ".png'>"
+															 + "</div>"; 
+													}
 	else if	(	flipped==false					)	{ return "<div class='card back'></div>"; }
 	
 }
@@ -279,12 +301,40 @@ function displayCard(card, pile, place){
 /// DISPLAY CARDS ///
 function displayCards(){
 
+	//clear cards
+	for(var a=0; a<13; a++)							{ document.getElementById(piles[a].name).innerHTML = ""; }
+
 	//display deck
 	for(var a=0; a<piles[0].cards.length; a++)		{ document.getElementById(piles[0].name).innerHTML += displayCard(piles[0].cards[a], 0, a); }
 	
+	//display drawn cards		
+	var counter = 0;
+	if(piles[1].cards.length%3 != 0)				{ var set = "<div class='set'>";
+													  for(; counter < piles[1].cards.length%3; counter++){ 
+														set += displayCard(piles[1].cards[counter]  , 1, counter);
+													  }
+													  set += "</div>"; 
+													  document.getElementById(piles[1].name).innerHTML += set;
+	}
+	for(var a=counter; a<piles[1].cards.length; a++){ if((a-counter)%3==0){var set  = "<div class='set'>";}
+													  set += displayCard(piles[1].cards[a]  , 1, a);
+													  if((a-counter)%3==2 || a+1==piles[1].cards.length){ 
+														set += "</div>"; 
+														document.getElementById(piles[1].name).innerHTML += set;
+													  }
+	}
+
+		
 	//go through all playable piles
-	for(var a=2; a<10; a++){
-		for(var b=0; b<piles[a].cards.length; b++)	{ document.getElementById(piles[a].name).innerHTML += displayCard(piles[a].cards[b], a, b); }
+	for(var a=2; a<9; a++){
+		for(var b=0; b<piles[a].cards.length; b++)	{ if(b+1==piles[a].cards.length){ piles[a].cards[piles[a].cards.length-1].flipped = true;   		}
+													  document.getElementById(piles[a].name).innerHTML += displayCard(piles[a].cards[b], a, b); 
+		}
+	}
+	
+	//go through all discard piles
+	for(var a=9; a<13; a++){
+		for(var b=0; b<piles[a].cards.length; b++)	{ document.getElementById(piles[a].name).innerHTML += displayCard(piles[a].cards[b], a, b); 		}
 	}
 
 }
@@ -298,6 +348,19 @@ displayCards();
 
 document.getElementById("deck").onclick = function(){draw();}
 
+document.getElementById("pile1").onclick = function(){startPile(2);}
+document.getElementById("pile2").onclick = function(){startPile(3);}
+document.getElementById("pile3").onclick = function(){startPile(4);}
+document.getElementById("pile4").onclick = function(){startPile(5);}
+document.getElementById("pile5").onclick = function(){startPile(6);}
+document.getElementById("pile6").onclick = function(){startPile(7);}
+document.getElementById("pile7").onclick = function(){startPile(8);}
+
+document.getElementById("discard1").onclick = function(){discard(9);}
+document.getElementById("discard2").onclick = function(){discard(10);}
+document.getElementById("discard3").onclick = function(){discard(11);}
+document.getElementById("discard4").onclick = function(){discard(12);}
+
 
 
 /**********************/
@@ -310,14 +373,15 @@ function draw(){
 	// if the deck is empty
 	if(piles[0].cards.length<1){
 		
-		// unflip all cards and return to deck
-		for(var a=0; a<piles[1].cards.length;){
+		// unflip all cards
+		for(var a=0; a<piles[1].cards.length; a++){
 			piles[1].cards[a].flipped = false;
+		}
+		
+		// return cards to deck
+		while(piles[1].cards.length>0){
 			piles[0].cards.push(piles[1].cards.pop());
 		}
-	
-		// clear drawn pile
-		document.getElementById("drawn").innerHTML = "";
 	
 	}
 	
@@ -332,73 +396,165 @@ function draw(){
 			newCards++;
 		}
 		
-		// print drawn cards
-		var print = "<div class='set'>";
+		// flip drawn cards
 		for(var a=(piles[1].cards.length-newCards); a<piles[1].cards.length; a++){
 			piles[1].cards[a].flipped = true;
-			print += displayCard(piles[1].cards[a], 1, a);
 		}
-		print += "</div>";
-		document.getElementById("drawn").innerHTML += print;
 	
 	}
 	
+	displayCards();
+	
+}
+
+/// DISCARD CARD ///
+function discard(pile){
+
+	//if a card has already been selected
+	if(cardSelected==true){
+
+		// is the card an ace
+		if (piles[selectedPile].cards[selectedPlace].value == 1){
+			// is the pile empty
+			if(piles[pile].cards.length == 0){
+				
+				piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+				displayCards();
+				unselectCard();	
+			
+			}
+			
+		}
+	
+	}
+
+}
+
+/// START NEW PILE ///
+function startPile(pile){
+
+	//if a card has already been selected
+	if(cardSelected==true){
+	
+		//is it a king
+		if(piles[selectedPile].cards[selectedPlace].value == 13){
+			// is the pile empty
+			if(piles[pile].cards.length == 0){
+			
+				piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+				displayCards();
+				unselectCard();	
+				
+			}
+			else{ alert("You can't place an King on a pile with cards"); }
+		}
+
+	}
+
 }
 
 /// CLICK CARDS ///
 function clickCard(pile, place){
 
-	// get card value and suit
-//	var value = pile[place].value;
-//	var suit  = pile[place].suit;
-	
-	alert(pile + place + " ");
-	
 	//if a card has already been selected
 	if(cardSelected==true){
 		
 		//if the same card is clicked
 		if( selectedPile  == pile &&
-			selectedPlace == place				){ cardSelected = false; }
+			selectedPlace == place				)	{ unselectCard(); }
 		
 		//if trying to place on another card
 		else{
 		
 			//cancel if trying to place on drawn pile
-			if(pile==0){draw();}
+			if(pile==0)								{ unselectCard();		draw();}
 			
-			//trying to add to discard
-			if( (pile==9 || pile==10 || pile==11 || pile==12) &&
-				piles[selectedPile].cards[selectedPlace].value == (piles[pile].cards[place].value -1) &&
-				piles[selectedPile].cards[selectedPlace].suit  == piles[pile].cards[place].suit			){}
+			//adding to discard
+			if((pile>8 && pile<13)){
 			
-			//if piles then opposite color
+				// is the card on the top of the current pile
+				if		(piles[selectedPile].cards.length > selectedPlace+1)											{ alert("That card is burried"); }
+				
+				// is the card an ace
+				else if (piles[selectedPile].cards[selectedPlace].value == 1){
+					// is the pile empty
+					if(piles[pile].cards.length == 0){}
+					else{ alert("You can't place an Ace on a pile with cards"); }
+				}
+				
+				// is value of the card one less
+				else if	(piles[selectedPile].cards[selectedPlace].value != piles[pile].cards[place].value+1)	{ alert("Something doesn't add up"); }
+				// do the the suits match
+				else if	(piles[selectedPile].cards[selectedPlace].suit  != piles[pile].cards[place].suit)		{ alert("These suits do not match."); }
+
+				else{
+				
+					piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+					displayCards();
+					unselectCard();		
+
+				}
+				
+			}		
+		
+			//adding to piles
+			if(pile>1 && pile<9){
 			
-			//move card
+				//is it a king
+				if(piles[selectedPile].cards[selectedPlace].value == 13){
+					// is the pile empty
+					if(piles[pile].cards.length == 0){
+					
+						piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+						displayCards();
+						unselectCard();	
+						
+					}
+					else{ alert("You can't place an King on a pile with cards"); }
+				}
+			
+				// is value of the card one more
+				else if(piles[selectedPile].cards[selectedPlace].value  != piles[pile].cards[place].value-1)	{ alert("Something doesn't add up"); }
+				// are the suits are opposite colors
+				else if(piles[selectedPile].cards[selectedPlace].suit%2 == piles[pile].cards[place].suit%2)		{ alert("These suits don't match. But like in the wrong way"); }
+				
+				else{
+				
+					piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace, piles[selectedPile].cards.length-selectedPlace));
+					displayCards();
+					unselectCard();				
+				
+				}
+											
+			}
 			
 		}
 	
-		cardSelected = false;
+		unselectCard();
 	
 	}
 	
-	else{ 
+	else{ selectCard(pile, place); }
 	
-		selectedPile  = pile;
-		selectedPlace = place;
-	
-		cardSelected = true; 
-		
-	}
+	displayCards();
 
 }
 
-/// TRANSFER CARD ///
-function transferCard(){
+/// SELECT CARD ///
+function selectCard(pile, place){
 
+	cardSelected  = true; 
+	selectedPile  = pile;
+	selectedPlace = place;
 
+}
 
+/// UNSELECT CARD ///
+function unselectCard(){
 
+	cardSelected  = false;
+	selectedPile  = null;
+	selectedPlace = null;
 
 }
 
