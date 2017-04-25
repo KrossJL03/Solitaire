@@ -18,8 +18,65 @@
 body{
 	background: #999;
 	font-family: "Lucida Console", Monaco, monospace;
+	padding: 0px;
+	margin: 0px;
+}
+
+#board{
+	background: #393;
+	height: 100%;
+	width: 880px;
+	padding: 0px;
+	margin: 0px;
+}
+
+#head{
+	width: 880px;
+	padding: 0px 20px;
+	marign: 0px;
+	box-sizing: border-box;
+	background: #363;
+}
+
+button{
+	background: none;
+	border: none;
+	font-weight: bolder;
+	text-transform: uppercase;
+	color: #fff;
+	font-size: 14pt;
+	text-align: center;
+	cursor: pointer;
+	width: 100px;
+	margin: 10px;
+	box-sizing: border-box;
+}
+
+.headblock{
+	text-transform: uppercase;
+	font-size: 10pt;
+	width: 100px;
+	text-align: center;
+	margin: 10px;
+	box-sizing: border-box;
+	display: inline-block;
+	color: #fff;
+}
+
+.headblock span{
+	background: #fff;
+	display: inline-block;
+	border-radius: 5px;
+	padding: 5px;
+	width: 100px;
+	box-sizing: border-box;
+	margin-top: 5px;
+	color: #000;
+}
 
 
+#game{
+	padding: 20px;
 }
 
 #deck,
@@ -29,49 +86,46 @@ body{
 .card{
 	height: 150px;
 	width: 100px;
-	border: 1px solid #000;
 	display: block;
-	box-sizing: border-box;
-	border-radius: 3px;
 	float: left;
+	box-sizing: border-box;
+	border-radius: 5px;
 	margin: 10px;
+	padding: 0px;
+}
+
+.card{
+		
 }
 
 #deck,
 #drawn,
 .discards,
 .piles{
-	background: #666;
+	background: #262;
 }
 
-#deckANDdrawn{
-	position: absolute;
-	top: 50px;
-	left: 50px;
+#top{
+	display: block;
+	height: 170px;
 }
 
 #discard{
-	position: absolute;
+	float: right;
 	top: 50px;
-	left: 410px;
+	right: 50px;
 	paddng: 0px;
 }
 
 #pile{
-	position: absolute;
-	top: 250px;
-	left: 50px;
+	display: block;
 }
 
 .front{
-	background: #fff;
-	background-image: none;
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
+	background: #000;
 	padding: 0px;
 	overflow: hidden;
 	text-align: center;
-
 	
 	  /* IE */
 /*	-ms-interpolation-mode: nearest-neighbor; */
@@ -88,14 +142,14 @@ body{
 
 }
 
-.selected{ border: 2px solid #0c0; }
+.selected img{ opacity: .5; }
 
 .back{
 	background: url("http://www.murphysmagicsupplies.com/images_email/Mandolin_BACK.jpg");
 	background-size: 100% 100%;
 }
 
-.card img{ width: 100px; height: 150px;}
+.card img{ width: 100px; height: 150px; float: left;}
 
 .card:hover{ 
 	cursor: pointer; 
@@ -137,8 +191,16 @@ body{
 </style>
 </head>
 <body>
+<center>
+<div id="board">
 
+<div id="head"> 
+<button type="button" id="restart">Restart</button><div class="headblock"></div><div class="headblock">Best Time<br><span id="besttime">- - -</span></div><div class="headblock">&nbsp;Win | Loss<br><span id="games">0 | 0</span></div><div class="headblock">Time<br><span id="time">0:00</span></div><div class="headblock"></div><button type="button" id="restart">Restart</button>
+</div>
 
+<div id="game">
+
+<div id="top">
 <div id="deckANDdrawn">
 <div id="deck"></div>
 <div id="drawn"></div>
@@ -150,6 +212,7 @@ body{
 <div class="discards" id="discard3"></div>
 <div class="discards" id="discard4"></div>
 </div>
+</div>
 
 <div id="pile">
 <div class="piles" id="pile1"></div>
@@ -160,9 +223,9 @@ body{
 <div class="piles" id="pile6"></div>
 <div class="piles" id="pile7"></div>
 </div>
-
-
-
+</div>
+</div>
+</center>
 </body>
 <script>
 
@@ -175,9 +238,23 @@ var piles    = [];
 /*		9-12 	= DISCARDS		*/
 //////////////////////////////////
 
+var doubleClick   = false;
+
 var cardSelected  = false;
 var selectedPile  = null;
 var selectedPlace = null;
+
+var gamesLost     = 0;
+var gamesWon	  = 0;
+
+var time		  = "";
+var bestTime	  = 100000000000;
+
+var startTime	  = "";
+var startHours 	  = "";
+var startMinutes  = "";
+var startSeconds  = "";
+var start		  = "";
 
 /*********************/
 /****** CLASSES ******/
@@ -204,6 +281,9 @@ function pile(name, type){
 
 /// CREATE PILES ///
 function createPiles(){
+
+	//empty piles
+	piles = [];
 
 	//deck
 	piles.push(new pile("deck", "deck"));
@@ -237,7 +317,6 @@ function createCards(){
 	
 }
 
-
 /// SHUFFLE CARDS ///
 function shuffle(){
 
@@ -255,7 +334,6 @@ function shuffle(){
 	}
 		
 }
-
 
 /// DEAL OUT CARDS ///
 function deal(){
@@ -281,23 +359,24 @@ function displayCard(card, pile, place){
 	var flipped = card.flipped;
 	var selected;
 	
-	if(pile==selectedPile && place==selectedPlace){ selected = true; }
+	if(pile==selectedPile && place>=selectedPlace){ selected = true; }
 	
 	var suitName = ["", "Diamonds", "Clubs", "Hearts", "Spades"];
 	
 	if		(	pile==1       		&& 
-				place<(piles[1].cards.length-1)	)	{ return "<div class='card front " 
-															 + (selected ? "selected" : "")
-															 + "' id='" + value + suit + "'>" 
+				place<(piles[1].cards.length-1)	)	{ return "<div class='card front" 
+															 + (selected ? " selected'" : "'")
+															 + " id='" + value + suit + "'>" 
 															 + "<img src='CARDS/" + value + suitName[suit]+ ".png'>"
 															 + "</div>"; 
 													}
-	else if	(	flipped==true					)	{ return "<div class='card front " 
-															 + (selected ? "selected" : "")
-															 + "' id='" + value + suit + "'" 
-															 + "' onclick=\"clickCard('" + pile + "', '" + place + "')\">" 
+	else if	(	flipped==true					)	{ return "<div class='card front"
+															 + (selected ? " selected'" : "'")
+															 + " id='" + value + suit + "'" 
+															 + " onclick=\"clickCard('" + pile + "', '" + place + "')\">" 
 															 + "<img src='CARDS/" + value + suitName[suit] + ".png'>"
-															 + "</div>"; 
+															 + "</div>"
+
 													}
 	else if	(	flipped==false					)	{ return "<div class='card back'></div>"; }
 	
@@ -344,12 +423,43 @@ function displayCards(){
 
 }
 
+/// RESTART ///
+function restart(){
+	
+	var won = false;
+	if(piles[9].cards.length>=13 && piles[10].cards.length>=13 && piles[11].cards.length>=13 && piles[12].cards.length>=13){ won = true; gamesWon++; }
+	else{ gamesLost++; }
 
-createPiles();
-createCards();
-shuffle();
-deal();
-displayCards();
+	var stringTime = document.getElementById("time").innerHTML;
+	var stringTimes = stringTime.split(":");
+	var lastTime = parseInt(stringTimes[0])*60 + parseInt(stringTimes[1]);
+	
+	if(won && lastTime<bestTime){
+		bestTime = lastTime;
+		var bestTimePrint = ((bestTime%360 - bestTime%60)/60) + ":" + (bestTime%60);
+		document.getElementById("besttime").innerHTML = bestTimePrint;
+	}
+
+	createPiles();
+	createCards();
+	shuffle();
+	deal();
+	displayCards();
+
+	document.getElementById("games").innerHTML 	  = gamesWon + " | " + gamesLost;
+	
+	startTime = new Date();
+	startHours = startTime.getHours();
+	startMinutes = startTime.getMinutes();
+	startSeconds = startTime.getSeconds();
+
+	start = (((startHours*60) + startMinutes)*60) + startSeconds;
+
+	time = setInterval(displayTime, 1000);
+	
+}
+
+document.getElementById("restart").onclick = function(){restart();}
 
 document.getElementById("deck").onclick = function(){draw();}
 
@@ -366,6 +476,20 @@ document.getElementById("discard2").onclick = function(){discard(10);}
 document.getElementById("discard3").onclick = function(){discard(11);}
 document.getElementById("discard4").onclick = function(){discard(12);}
 
+createPiles();
+createCards();
+shuffle();
+deal();
+displayCards();
+
+startTime = new Date();
+startHours = startTime.getHours();
+startMinutes = startTime.getMinutes();
+startSeconds = startTime.getSeconds();
+
+start = (((startHours*60) + startMinutes)*60) + startSeconds;
+	
+time = setInterval(displayTime, 1000);
 
 
 /**********************/
@@ -374,6 +498,8 @@ document.getElementById("discard4").onclick = function(){discard(12);}
 
 /// DRAW CARDS ///
 function draw(){
+
+	if(cardSelected){ unselectCard(); }
 
 	// if the deck is empty
 	if(piles[0].cards.length<1){
@@ -461,12 +587,73 @@ function startPile(pile){
 /// CLICK CARDS ///
 function clickCard(pile, place){
 
+	
 	//if a card has already been selected
 	if(cardSelected==true){
 		
 		//if the same card is clicked
 		if( selectedPile  == pile &&
-			selectedPlace == place				)	{ unselectCard(); }
+			selectedPlace == place	 ){ 
+			
+			//double click
+			if(doubleClick){
+			
+				doubleClick = false;
+				
+				// is the card on the top of the current pile
+				if(piles[selectedPile].cards.length <= selectedPlace+1){
+
+					// is the card an ace
+					if (piles[selectedPile].cards[selectedPlace].value == 1){
+
+						// check all piles
+						for(var a=9; a<13; a++){
+						
+							//if empty
+							if(piles[a].cards.length==0){
+								piles[a].cards = piles[a].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+								unselectCard();
+								a = 14;
+							}
+							
+						}
+					
+					}
+					
+					//not an ace
+					else{
+
+						// check all piles
+						for(var a=9; a<13; a++){
+
+							//if not empty
+							if(piles[a].cards.length>0){
+
+								//if suits match
+								if(piles[a].cards[0].suit == piles[selectedPile].cards[selectedPlace].suit){
+
+									//if selectedCard is next in line for discard pile
+									if(piles[selectedPile].cards[selectedPlace].value == piles[a].cards[piles[a].cards.length-1].value+1){
+										piles[a].cards = piles[a].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+										unselectCard();
+										a = 14;
+									}
+									
+								}
+								
+							}
+							
+						}
+
+					}
+						
+				}
+				
+			}
+		
+			else{ unselectCard(); }
+		
+		}
 		
 		//if trying to place on another card
 		else{
@@ -478,26 +665,24 @@ function clickCard(pile, place){
 			if((pile>8 && pile<13)){
 			
 				// is the card on the top of the current pile
-				if		(piles[selectedPile].cards.length > selectedPlace+1)											{ alert("That card is burried"); }
+				if		(piles[selectedPile].cards.length > selectedPlace+1)									{}
 				
 				// is the card an ace
 				else if (piles[selectedPile].cards[selectedPlace].value == 1){
 					// is the pile empty
 					if(piles[pile].cards.length == 0){}
-					else{ alert("You can't place an Ace on a pile with cards"); }
 				}
 				
 				// is value of the card one less
-				else if	(piles[selectedPile].cards[selectedPlace].value != piles[pile].cards[place].value+1)	{ alert("Something doesn't add up"); }
+				else if	(piles[selectedPile].cards[selectedPlace].value != piles[pile].cards[place].value+1)	{}
 				// do the the suits match
-				else if	(piles[selectedPile].cards[selectedPlace].suit  != piles[pile].cards[place].suit)		{ alert("These suits do not match."); }
+				else if	(piles[selectedPile].cards[selectedPlace].suit  != piles[pile].cards[place].suit)		{}
 
 				else{
 				
 					piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
-					displayCards();
-					unselectCard();		
-
+					unselectCard();	
+						
 				}
 				
 			}		
@@ -511,23 +696,21 @@ function clickCard(pile, place){
 					if(piles[pile].cards.length == 0){
 					
 						piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
-						displayCards();
 						unselectCard();	
 						
 					}
-					else{ alert("You can't place an King on a pile with cards"); }
+
 				}
 			
 				// is value of the card one more
-				else if(piles[selectedPile].cards[selectedPlace].value  != piles[pile].cards[place].value-1)	{ alert("Something doesn't add up"); }
+				else if(piles[selectedPile].cards[selectedPlace].value  != piles[pile].cards[place].value-1)	{}
 				// are the suits are opposite colors
-				else if(piles[selectedPile].cards[selectedPlace].suit%2 == piles[pile].cards[place].suit%2)		{ alert("These suits don't match. But like in the wrong way"); }
+				else if(piles[selectedPile].cards[selectedPlace].suit%2 == piles[pile].cards[place].suit%2)		{}
 				
 				else{
 				
 					piles[pile].cards = piles[pile].cards.concat(piles[selectedPile].cards.splice(selectedPlace, piles[selectedPile].cards.length-selectedPlace));
-					displayCards();
-					unselectCard();				
+					unselectCard();	
 				
 				}
 											
@@ -535,11 +718,19 @@ function clickCard(pile, place){
 			
 		}
 	
-		unselectCard();
-	
 	}
 	
-	else{ selectCard(pile, place); }
+	else{ 
+	
+		selectCard(pile, place); 
+		
+		// double click
+		if(!doubleClick){ console.log("doubles");
+			doubleClick = true;
+			doubleClickTime = setTimeout(function(){ doubleClick = false; }, 300);
+		}
+		
+	}
 	
 	displayCards();
 
@@ -567,9 +758,26 @@ function unselectCard(){
 /***** FUNCTIONS *****/
 /*********************/
 
+/// TIME CLOCK ///
+function displayTime(){
 
+	var countingTime    = new Date();
+	var countingHours   = countingTime.getHours();
+	var countingMinutes = countingTime.getMinutes();
+	var countingSeconds = countingTime.getSeconds();
+	
+	var counting = (((countingHours*60) + countingMinutes)*60) + countingSeconds;
+	var time = counting - start;
+	
+	var timeMinutes = (time%360 - time%60)/60;
+	var timeSeconds = time%60;
+	
+	var addZero = false;
+	if(timeSeconds<10){addZero = true;}
+	
+	document.getElementById("time").innerHTML = timeMinutes + ":" + (addZero ? "0" : "") + timeSeconds;
 
-
+}
 
 
 
