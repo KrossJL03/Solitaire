@@ -15,6 +15,10 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <style>
 
+/*******************
+		BASICS		
+*******************/
+
 body{
 	background: #999;
 	font-family: "Lucida Console", Monaco, monospace;
@@ -25,14 +29,11 @@ body{
 #board{
 	background: #393;
 	height: 100%;
-	width: 880px;
 	padding: 0px;
 	margin: 0px;
 }
 
 #head{
-	width: 880px;
-	padding: 0px 20px;
 	marign: 0px;
 	box-sizing: border-box;
 	background: #363;
@@ -44,20 +45,14 @@ button{
 	font-weight: bolder;
 	text-transform: uppercase;
 	color: #fff;
-	font-size: 14pt;
 	text-align: center;
 	cursor: pointer;
-	width: 100px;
-	margin: 10px;
 	box-sizing: border-box;
 }
 
 .headblock{
 	text-transform: uppercase;
-	font-size: 10pt;
-	width: 100px;
 	text-align: center;
-	margin: 10px;
 	box-sizing: border-box;
 	display: inline-block;
 	color: #fff;
@@ -68,65 +63,153 @@ button{
 	display: inline-block;
 	border-radius: 5px;
 	padding: 5px;
-	width: 100px;
 	box-sizing: border-box;
 	margin-top: 5px;
 	color: #000;
 }
 
-
-#game{
-	padding: 20px;
-}
+/***************************
+		CARDS AND PILES		
+***************************/
 
 #deck,
 #drawn,
 .discards,
 .piles,
 .card{
-	height: 150px;
-	width: 100px;
 	display: block;
 	float: left;
 	box-sizing: border-box;
 	border-radius: 5px;
-	margin: 10px;
 	padding: 0px;
-}
-
-.card{
-		
 }
 
 #deck,
 #drawn,
 .discards,
-.piles{
-	background: #262;
-}
+.piles						{ background: #262; }
 
-#top{
-	display: block;
-	height: 170px;
-}
+#top,			
+#allpiles					{ display: block; }
+
+#drawn .set,	
+.card img					{ float: left;}
 
 #discard{
 	float: right;
-	top: 50px;
-	right: 50px;
 	paddng: 0px;
 }
 
-#pile{
-	display: block;
-}
-
 .front{
-	background: #000;
 	padding: 0px;
 	overflow: hidden;
 	text-align: center;
+	display: block;
+	position: relative; 
+	z-index: 1;
+}
+
+.back{
+	background: url("http://www.murphysmagicsupplies.com/images_email/Mandolin_BACK.jpg");
+	background-size: 100% 100%;
+}
+
+.selected,
+.selected ~ .front 			{ background: #00f; }
+
+.selected img,				
+.selected ~ .front img		{ opacity: .7; }
+
+.card:hover					{ cursor: pointer; }
+
+/*******************************
+		SCREEN DEPENDANT		
+*******************************/
+
+@media screen and (max-height: 850px){
+
+	#head,
+	#board					{ width: 616px; 										}
+	#top					{					height: 119px;						}
+
+	button,
+	.headblock				{ width:  70px; 						margin:  7px; 	}
+	.headblock span 		{ width:  70px; 										}
+
+	#deck,
+	#drawn,
+	.discards,
+	.piles					{ width:  70px;		height: 105px; 		margin:  7px;	}
+	.card,
+	.card img				{ width:  70px;		height: 105px; 						}
+
 	
+	#deck 					.card,
+				.discards 	.card		{ margin:     0px     0px  -105px     0px; }
+	#drawn 		.set					{ margin:     0px  -140px     0px     0px; }
+	#drawn 		.set 		.card		{ margin:     0px   -49px     0px     0px; }
+				.piles 		.card		{ margin:     0px     0px   -77px     0px; }
+	
+	
+	#head					{ padding: 		0px 14px;}
+	#drawn					{ max-width: 	140px; }
+	#game					{ padding: 		14px; }
+	button 					{ font-size: 	12pt; }  
+	.headblock				{ font-size: 	8pt; }
+	
+}
+
+@media screen and (min-height: 850px){
+
+	#head,
+	#board					{ width: 880px; 										}
+	#top					{					height: 170px;						}
+
+	button,
+	.headblock				{ width: 100px; 						margin: 10px; 	}
+	.headblock span 		{ width: 100px; 										}
+
+	#deck,
+	#drawn,
+	.discards,
+	.piles					{ width: 100px;		height: 150px; 		margin: 10px;	}
+	.card,
+	.card img				{ width: 100px;		height: 150px; 						}
+
+	
+	#deck 					.card,
+				.discards 	.card		{ margin:     0px     0px  -150px     0px; }
+	#drawn 		.set					{ margin:     0px  -200px     0px     0px; }
+	#drawn 		.set 		.card		{ margin:     0px   -70px     0px     0px; }
+				.piles 		.card		{ margin:     0px     0px  -110px     0px; }
+	
+	
+	#head					{ padding: 		0px 20px;}
+	#drawn					{ max-width: 	200px; }
+	#game					{ padding: 		20px; }
+	button 					{ font-size: 	14pt; }  
+	.headblock				{ font-size: 	10pt; }
+
+}
+
+/***********************
+		TEMPORARY		
+***********************/
+
+#undo { opacity: .3; }
+
+
+/*	CARD ANIMATION
+
+-webkit-transform: rotateY(180deg);
+transform: rotateY(180deg);
+
+transition: 		all 1s ease-in-out;
+-moz-transition: 	all 1s ease-in-out;
+-webkit-transition: all 1s ease-in-out;
+*/
+
+/* CLICK AND DRAG */
 	  /* IE */
 /*	-ms-interpolation-mode: nearest-neighbor; */
 
@@ -140,52 +223,6 @@ button{
 /*	image-rendering: pixelated; */
 
 
-}
-
-.selected img{ opacity: .5; }
-
-.back{
-	background: url("http://www.murphysmagicsupplies.com/images_email/Mandolin_BACK.jpg");
-	background-size: 100% 100%;
-}
-
-.card img{ width: 100px; height: 150px; float: left;}
-
-.card:hover{ 
-	cursor: pointer; 
-/*	-webkit-transform: rotateY(180deg);
-	transform: rotateY(180deg);
-	
-	transition: 		all 1s ease-in-out;
-	-moz-transition: 	all 1s ease-in-out;
-	-webkit-transition: all 1s ease-in-out;
-*/
-	}
-
-#deck .card{
-	margin: 0px 0px -150px 0px;
-}
-
-#drawn{ 
-	max-width: 200px;
-}
-
-#drawn .set{
-	margin: 0px -200px 0px 0px;
-	float: left;
-}
-
-#drawn .set .card{
-	margin: 0px -70px 0px 0px;
-}
-
-.discards .card{
-	margin: 0px 0px -150px 0px;
-}
-
-.piles .card{
-	margin: 0px 0px -110px 0px;
-}
 
 
 </style>
@@ -195,7 +232,7 @@ button{
 <div id="board">
 
 <div id="head"> 
-<button type="button" id="restart">Restart</button><div class="headblock"></div><div class="headblock">Best Time<br><span id="besttime">- - -</span></div><div class="headblock">&nbsp;Win | Loss<br><span id="games">0 | 0</span></div><div class="headblock">Time<br><span id="time">0:00</span></div><div class="headblock"></div><button type="button" id="restart">Restart</button>
+<button type="button" id="restart">Restart</button><div class="headblock"></div><div class="headblock">Best Time<br><span id="besttime">- - -</span></div><div class="headblock">&nbsp;Win | Loss<br><span id="games">0 | 0</span></div><div class="headblock">Time<br><span id="time">0:00</span></div><div class="headblock"></div><button type="button" id="undo">Undo</button>
 </div>
 
 <div id="game">
@@ -214,7 +251,7 @@ button{
 </div>
 </div>
 
-<div id="pile">
+<div id="allpile">
 <div class="piles" id="pile1"></div>
 <div class="piles" id="pile2"></div>
 <div class="piles" id="pile3"></div>
@@ -238,23 +275,27 @@ var piles    = [];
 /*		9-12 	= DISCARDS		*/
 //////////////////////////////////
 
-var doubleClick   = false;
+var doubleClick		= false;
+var doubleClickTime = "";
 
-var cardSelected  = false;
-var selectedPile  = null;
-var selectedPlace = null;
+var deckClick		= true;
+var deckClickTime	= "";
 
-var gamesLost     = 0;
-var gamesWon	  = 0;
+var cardSelected	= false;
+var selectedPile	= null;
+var selectedPlace	= null;
 
-var time		  = "";
-var bestTime	  = 100000000000;
+var gamesLost		= 0;
+var gamesWon		= 0;
 
-var startTime	  = "";
-var startHours 	  = "";
-var startMinutes  = "";
-var startSeconds  = "";
-var start		  = "";
+var time			= "";
+var bestTime		= 100000000000;
+
+var startTime		= "";
+var startHours		= "";
+var startMinutes	= "";
+var startSeconds	= "";
+var start			= "";
 
 /*********************/
 /****** CLASSES ******/
@@ -359,7 +400,7 @@ function displayCard(card, pile, place){
 	var flipped = card.flipped;
 	var selected;
 	
-	if(pile==selectedPile && place>=selectedPlace){ selected = true; }
+	if(pile==selectedPile && place==selectedPlace){ selected = true; }
 	
 	var suitName = ["", "Diamonds", "Clubs", "Hearts", "Spades"];
 	
@@ -461,7 +502,7 @@ function restart(){
 
 document.getElementById("restart").onclick = function(){restart();}
 
-document.getElementById("deck").onclick = function(){draw();}
+document.getElementById("deck").onclick = function(){ console.log("clicked deck"); draw();}
 
 document.getElementById("pile1").onclick = function(){startPile(2);}
 document.getElementById("pile2").onclick = function(){startPile(3);}
@@ -499,42 +540,52 @@ time = setInterval(displayTime, 1000);
 /// DRAW CARDS ///
 function draw(){
 
-	if(cardSelected){ unselectCard(); }
+	// no deck flipping bug
+	if(deckClick){
+	
+		if(cardSelected){ console.log("a card was selected"); unselectCard(); }
 
-	// if the deck is empty
-	if(piles[0].cards.length<1){
+		// if the deck is empty
+		if(piles[0].cards.length<1){
 		
-		// unflip all cards
-		for(var a=0; a<piles[1].cards.length; a++){
-			piles[1].cards[a].flipped = false;
+			console.log("the deck was empty");
+			
+			// unflip all cards
+			for(var a=0; a<piles[1].cards.length; a++){
+				piles[1].cards[a].flipped = false;
+			}
+			
+			// return cards to deck
+			while(piles[1].cards.length>0){
+				piles[0].cards.push(piles[1].cards.pop());
+			}
+		
 		}
 		
-		// return cards to deck
-		while(piles[1].cards.length>0){
-			piles[0].cards.push(piles[1].cards.pop());
+		// if deck has cards
+		else{ console.log("adding 3 cards");
+		
+			var newCards = 0;
+		
+			// draw up to 3 cards if possible
+			for(var a=0; a<3 && piles[0].cards.length>0; a++){
+				piles[1].cards.push(piles[0].cards.pop());
+				newCards++;
+			}
+			
+			// flip drawn cards
+			for(var a=(piles[1].cards.length-newCards); a<piles[1].cards.length; a++){
+				piles[1].cards[a].flipped = true;
+			}
+		
 		}
 	
+		displayCards();
+		
+		deckClick = false;
+		deckClickTime = setTimeout(function(){ deckClick = true; }, 300);
+		
 	}
-	
-	// if deck has cards
-	else{
-	
-		var newCards = 0;
-	
-		// draw up to 3 cards if possible
-		for(var a=0; a<3 && piles[0].cards.length>0; a++){
-			piles[1].cards.push(piles[0].cards.pop());
-			newCards++;
-		}
-		
-		// flip drawn cards
-		for(var a=(piles[1].cards.length-newCards); a<piles[1].cards.length; a++){
-			piles[1].cards[a].flipped = true;
-		}
-	
-	}
-	
-	displayCards();
 	
 }
 
@@ -587,73 +638,69 @@ function startPile(pile){
 /// CLICK CARDS ///
 function clickCard(pile, place){
 
+	//double click
+	if(doubleClick){
 	
-	//if a card has already been selected
-	if(cardSelected==true){
+		doubleClick = false;
 		
-		//if the same card is clicked
-		if( selectedPile  == pile &&
-			selectedPlace == place	 ){ 
-			
-			//double click
-			if(doubleClick){
-			
-				doubleClick = false;
+		// is the card on the top of the current pile
+		if(piles[pile].cards.length <= place+1){
+
+			// is the card an ace
+			if (piles[pile].cards[place].value == 1){
+
+				// check all piles
+				for(var a=9; a<13; a++){
 				
-				// is the card on the top of the current pile
-				if(piles[selectedPile].cards.length <= selectedPlace+1){
+					//if empty
+					if(piles[a].cards.length==0){
+						piles[a].cards = piles[a].cards.concat(piles[pile].cards.splice(place,1));
+						unselectCard();
+						a = 14;
+					}
+					
+				}
+			
+			}
+			
+			//not an ace
+			else{
 
-					// is the card an ace
-					if (piles[selectedPile].cards[selectedPlace].value == 1){
+				// check all piles
+				for(var a=9; a<13; a++){
 
-						// check all piles
-						for(var a=9; a<13; a++){
-						
-							//if empty
-							if(piles[a].cards.length==0){
-								piles[a].cards = piles[a].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
+					//if not empty
+					if(piles[a].cards.length>0){
+
+						//if suits match
+						if(piles[a].cards[0].suit == piles[pile].cards[place].suit){
+
+							//if selectedCard is next in line for discard pile
+							if(piles[pile].cards[place].value == piles[a].cards[piles[a].cards.length-1].value+1){
+								piles[a].cards = piles[a].cards.concat(piles[pile].cards.splice(place,1));
 								unselectCard();
 								a = 14;
 							}
 							
 						}
-					
-					}
-					
-					//not an ace
-					else{
-
-						// check all piles
-						for(var a=9; a<13; a++){
-
-							//if not empty
-							if(piles[a].cards.length>0){
-
-								//if suits match
-								if(piles[a].cards[0].suit == piles[selectedPile].cards[selectedPlace].suit){
-
-									//if selectedCard is next in line for discard pile
-									if(piles[selectedPile].cards[selectedPlace].value == piles[a].cards[piles[a].cards.length-1].value+1){
-										piles[a].cards = piles[a].cards.concat(piles[selectedPile].cards.splice(selectedPlace,1));
-										unselectCard();
-										a = 14;
-									}
-									
-								}
-								
-							}
-							
-						}
-
-					}
 						
+					}
+					
 				}
-				
+
 			}
-		
-			else{ unselectCard(); }
-		
+				
 		}
+		
+	}
+
+	
+	//if a card has already been selected
+	else if(cardSelected==true){
+		
+		//if the same card is clicked
+		if( selectedPile  == pile &&
+			selectedPlace == place	 )				{ unselectCard(); }
 		
 		//if trying to place on another card
 		else{
@@ -720,16 +767,13 @@ function clickCard(pile, place){
 	
 	}
 	
-	else{ 
+	else{ selectCard(pile, place); }
 	
-		selectCard(pile, place); 
-		
-		// double click
-		if(!doubleClick){ console.log("doubles");
-			doubleClick = true;
-			doubleClickTime = setTimeout(function(){ doubleClick = false; }, 300);
-		}
-		
+	// double click
+	if(!doubleClick){
+		clearTimeout(doubleClickTime);
+		doubleClick = true;
+		doubleClickTime = setTimeout(function(){ doubleClick = false; }, 300);
 	}
 	
 	displayCards();
